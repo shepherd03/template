@@ -1,0 +1,29 @@
+[
+    {
+        "domain": "xxxx",
+        "intent": "xxxx",
+        "expanded_sentence": "xxxxx",
+        "pattern": "xxxxx",
+        "slots_mapping": {
+            "key1": [
+                "xxxx"
+            ],
+            "key2": [
+                "xxxxx"
+            ],
+            "key3": [
+                "xxxx",
+                "xxxx"
+            ],
+            "key4": [
+                "xxxxx",
+                "xxxx",
+                "xxxx",
+                "xxxx",
+                "xxxx",
+                "xxxx",
+                "xxxx"
+            ]
+        }
+    }
+]

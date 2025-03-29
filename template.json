@@ -1,0 +1,434 @@
+[
+    {
+        "name": "T_分台区同期线损_query_number",
+        "priority": "1",
+        "examples": [
+            "定州新立所2024年4月台区同期线损合格率多少"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "分台区同期线损"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "time": "*"
+                    },
+                    {
+                        "ftqxdType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "分台区同期线损"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "time": "*"
+                    },
+                    {
+                        "ftqxdType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            }
+        },
+        "content": "根据{{org}}提供的{{time}}数据，{{last_slot.slots.ftqxdType}}的{{last_slot.slots.query}}信息暂时无法获取，请稍后再试。"
+    },
+    {
+        "name": "T_售电量及收入_query_number",
+        "priority": "1",
+        "examples": [
+            "2023年12月河北省电力公司资产负债是多少"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "售电量及收入"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "time": "*"
+                    },
+                    {
+                        "tradeType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "售电量及收入"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "tradeType": "*"
+                    },
+                    {
+                        "query": "*"
+                    },
+                    {
+                        "startTime": "*"
+                    },
+                    {
+                        "endTime": "*"
+                    },
+                    {
+                        "org_level": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，未能找到{{origin_slot.slots.org}}在{{last_slot.slots.startTime}}到{{last_slot.slots.endTime}}的{{last_slot.slots.tradeType}}的{{origin_slot.slots.query}}。"
+    },
+    {
+        "name": "T_95598工单_query_proportion",
+        "priority": "1",
+        "examples": [
+            "石家庄2024年4月95598业务申请工单占河北省的多少？"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "95598工单"
+                ],
+                "intent": [
+                    "query_proportion"
+                ],
+                "slots": [
+                    {
+                        "option": "*"
+                    },
+                    {
+                        "time": "*"
+                    },
+                    {
+                        "lyType": "*"
+                    },
+                    {
+                        "indicator": "*"
+                    },
+                    {
+                        "dimension": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "95598工单"
+                ],
+                "intent": [
+                    "query_proportion"
+                ],
+                "slots": [
+                    {
+                        "option": "*"
+                    },
+                    {
+                        "lyType": "*"
+                    },
+                    {
+                        "indicator": "*"
+                    },
+                    {
+                        "dimension": "*"
+                    },
+                    {
+                        "startTime": "*"
+                    },
+                    {
+                        "endTime": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，未能查询到{{last_slot.slots.option}}从{{last_slot.slots.startTime}}到{{last_slot.slots.endTime}}的{{last_slot.slots.indicator}}在{{last_slot.slots.dimension}}中的占比数据。"
+    },
+    {
+        "name": "T_设备台账_query_number",
+        "priority": "1",
+        "examples": [
+            "石家庄输电线路"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "xllxType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "xllxType": "*"
+                    },
+                    {
+                        "query": "*"
+                    },
+                    {
+                        "org_level": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，暂时没有检索到{{last_slot.slots.org}}管理的{{last_slot.slots.xllxType}}{{origin_slot.slots.query}}数据（组织层级：{{last_slot.slots.org_level}}）。"
+    },
+    {
+        "name": "T_设备台账_query_number",
+        "priority": "1",
+        "examples": [
+            "石家庄输电线路"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "xllxType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "xllxType": "*"
+                    },
+                    {
+                        "query": "*"
+                    },
+                    {
+                        "org_level": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，暂时没有检索到{{last_slot.slots.org}}管理的{{last_slot.slots.xllxType}}{{origin_slot.slots.query}}数据（组织层级：{{last_slot.slots.org_level}}）。"
+    },
+    {
+        "name": "T_业扩工单_query_number",
+        "priority": "1",
+        "examples": [
+            "2023年5月石家庄答复供电方案时长是多少？"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "业扩工单"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "time": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "业扩工单"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "query": "*"
+                    },
+                    {
+                        "startTime": "*"
+                    },
+                    {
+                        "endTime": "*"
+                    },
+                    {
+                        "org_level": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，未能获取到{{last_slot.slots.org}}（{{last_slot.slots.org_level}}）从{{last_slot.slots.startTime}}至{{last_slot.slots.endTime}}的{{origin_slot.slots.query}}相关数据。"
+    },
+    {
+        "name": "T_线路图_query_number",
+        "priority": "1",
+        "examples": [
+            "查询220kv守敬站10kv守钢i线示意图"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "线路图"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "voltType": "*"
+                    },
+                    {
+                        "line": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "线路图"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "voltType": "*"
+                    },
+                    {
+                        "line": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，当前未能查询到{{last_slot.slots.voltType}} {{last_slot.slots.line}}的{{last_slot.slots.query}}信息。"
+    },
+    {
+        "name": "T_设备台账_query_number",
+        "priority": "1",
+        "examples": [
+            "石家庄在运的熔断器有多少"
+        ],
+        "conditions": {
+            "origin_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "yxztType": "*"
+                    },
+                    {
+                        "query": "*"
+                    }
+                ]
+            },
+            "last_slot": {
+                "domain": [
+                    "设备台账"
+                ],
+                "intent": [
+                    "query_number"
+                ],
+                "slots": [
+                    {
+                        "org": "*"
+                    },
+                    {
+                        "yxztType": "*"
+                    },
+                    {
+                        "query": "*"
+                    },
+                    {
+                        "org_level": "*"
+                    }
+                ]
+            }
+        },
+        "content": "小智在{{origin_slot.domain}}领域下，尚未找到{{last_slot.slots.org}}（{{last_slot.slots.org_level}}）{{last_slot.slots.yxztType}}的{{origin_slot.slots.query}}相关数据。"
+    }
+]
