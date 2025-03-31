@@ -1,237 +1,210 @@
 import json
-import re
 import os
+from typing import List, Dict, Any, Optional
+
+# 导入自定义类型定义
+from types_custom import LastSlot, Dependency, ValidationResult, SlotDict, TemplateResponse, ErrorType
+
+# 白名单槽位，这些槽位不需要验证
+slot_white_list = ["time", "org", "option"]
+
+# 文件缓存
+_file_cache = {}
+
+def load_file(file_path: str, default: Any = None) -> Any:
+    # 检查缓存
+    if file_path in _file_cache:
+        return _file_cache[file_path]
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = json.load(f)
+        # 更新缓存
+        _file_cache[file_path] = content
+        return content
+    except Exception as e:
+        print(f"加载文件失败 {file_path}: {e}")
+        return default
+
 
 class TemplateParser:
-    def __init__(self, template_file_path):
-        """
-        初始化模板解析器
-        
-        Args:
-            template_file_path: 模板文件路径
-        """
-        self.template_file_path = template_file_path
-        self.templates = self._load_templates()
-    
-    def _load_templates(self):
-        """
-        加载模板文件
-        
-        Returns:
-            list: 模板列表
-        """
-        try:
-            with open(self.template_file_path, 'r', encoding='utf-8') as f:
-                templates = json.load(f)
-            return templates
-        except Exception as e:
-            print(f"加载模板文件失败: {e}")
-            return []
-    
-    def _match_domain(self, template_domains, user_domain):
-        """
-        匹配领域
-        
-        Args:
-            template_domains: 模板中的领域列表
-            user_domain: 用户对象中的领域
-            
-        Returns:
-            bool: 是否匹配
-        """
-        if not user_domain:
-            return False
-        
-        # 通配符匹配任意有效值
-        if "*" in template_domains:
-            return True
-        
-        return user_domain in template_domains
-    
-    def _match_intent(self, template_intents, user_intent):
-        """
-        匹配意图
-        
-        Args:
-            template_intents: 模板中的意图列表
-            user_intent: 用户对象中的意图
-            
-        Returns:
-            bool: 是否匹配
-        """
-        if not user_intent:
-            return False
-        
-        # 通配符匹配任意有效值
-        if "*" in template_intents:
-            return True
-        
-        return user_intent in template_intents
-    
-    def _match_slots(self, template_slots, user_slots):
-        """
-        匹配槽位
-        
-        Args:
-            template_slots: 模板中的槽位列表
-            user_slots: 用户对象中的槽位
-            
-        Returns:
-            bool: 是否匹配
-        """
-        if not template_slots:  # 如果模板没有指定槽位要求，则匹配成功
-            return True
-        
-        if not user_slots:  # 如果用户没有槽位但模板要求有槽位，则匹配失败
-            return False
-        
-        # 检查每个模板槽位是否在用户槽位中
-        for slot_dict in template_slots:
-            slot_key = list(slot_dict.keys())[0]  # 获取槽位名称
-            
-            # 检查用户槽位中是否存在该槽位
-            if slot_key not in user_slots:
-                return False
-            
-            # 如果槽位值不是通配符，则需要精确匹配
-            if slot_dict[slot_key] != "*" and user_slots[slot_key] != slot_dict[slot_key]:
-                return False
-        
-        return True
-    
-    def _match_conditions(self, template_conditions, user_data):
-        """
-        匹配条件
-        
-        Args:
-            template_conditions: 模板中的条件
-            user_data: 用户数据
-            
-        Returns:
-            bool: 是否匹配
-        """
-        # 检查origin_slot匹配
-        if "origin_slot" in template_conditions and "origin_slot" in user_data:
-            template_origin = template_conditions["origin_slot"]
-            user_origin = user_data["origin_slot"]
-            
-            # 匹配domain
-            if not self._match_domain(template_origin.get("domain", []), user_origin.get("domain", "")):
-                return False
-            
-            # 匹配intent
-            if not self._match_intent(template_origin.get("intent", []), user_origin.get("intent", "")):
-                return False
-            
-            # 匹配slots
-            if not self._match_slots(template_origin.get("slots", []), user_origin.get("slots", {})):
-                return False
-        
-        # 检查last_slot匹配
-        if "last_slot" in template_conditions and "last_slot" in user_data:
-            template_last = template_conditions["last_slot"]
-            user_last = user_data["last_slot"]
-            
-            # 匹配domain
-            if not self._match_domain(template_last.get("domain", []), user_last.get("domain", "")):
-                return False
-            
-            # 匹配intent
-            if not self._match_intent(template_last.get("intent", []), user_last.get("intent", "")):
-                return False
-            
-            # 匹配slots
-            if not self._match_slots(template_last.get("slots", []), user_last.get("slots", {})):
-                return False
-        
-        return True
-    
-    def _replace_variables(self, content, user_data):
-        """
-        替换模板中的变量
-        
-        Args:
-            content: 模板内容
-            user_data: 用户数据
-            
-        Returns:
-            str: 替换后的内容
-        """
-        # 使用正则表达式查找所有{{}}格式的变量
-        pattern = r'\{\{([^\}]+)\}\}'
-        matches = re.findall(pattern, content)
-        
-        # 替换每个变量
-        for match in matches:
-            var_path = match.strip()  # 变量路径，如 origin_slot.slots.query_count
-            parts = var_path.split('.')
-            
-            # 获取变量值
-            value = user_data
-            try:
-                for part in parts:
-                    value = value[part]
-            except (KeyError, TypeError):
-                value = "未知"  # 如果变量不存在，则替换为"未知"
-            
-            # 替换变量
-            content = content.replace(f"{{{{{match}}}}}", str(value))
-        
-        return content
-    
-    def find_best_template(self, user_data):
-        """
-        查找最佳匹配的模板
-        
-        Args:
-            user_data: 用户数据
-            
-        Returns:
-            dict: 最佳匹配的模板和填充后的内容
-        """
-        matched_templates = []
-        
-        # 遍历所有模板，找出匹配的模板
-        for template in self.templates:
-            if self._match_conditions(template.get("conditions", {}), user_data):
-                matched_templates.append(template)
-        
-        if not matched_templates:
-            return {
-                "template": None,
-                "content": "未找到匹配的模板"
-            }
-        
-        # 按优先级排序（数字越小优先级越高）
-        matched_templates.sort(key=lambda x: int(x.get("priority", 99)))
-        
-        # 获取最佳匹配的模板
-        best_template = matched_templates[0]
-        
-        # 替换模板中的变量
-        content = self._replace_variables(best_template.get("content", ""), user_data)
-        
-        return {
-            "template": best_template,
-            "content": content
-        }
-
-# 使用示例
-def parse_template(user_data, template_file_path=None):
-    """
-    解析模板
-    
-    Args:
-        user_data: 用户数据
-        template_file_path: 模板文件路径，默认为当前目录下的template.json
-        
-    Returns:
-        dict: 最佳匹配的模板和填充后的内容
-    """
-    if template_file_path is None:
+    def __init__(self, dependency_file_path: Optional[str] = None, templates_json_path: Optional[str] = None):
         # 获取当前脚本所在目录
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        template_file_path = os.path.join(current_dir, "template.json")
+        
+        # 设置默认依赖关系文件路径
+        if dependency_file_path is None:
+            dependency_file_path = os.path.join(current_dir, "dependency.json")
+            print("dependency加载完毕")
+        
+        # 设置默认模板JSON文件路径
+        if templates_json_path is None:
+            templates_json_path = os.path.join(current_dir, "templates.json")
+            print("templates.json路径设置完毕")
+        
+        # 加载依赖关系
+        self.dependencies: List[Dependency] = load_file(dependency_file_path, [])
+        
+        # 加载模板JSON
+        self.templates = load_file(templates_json_path, {})
+        print("templates.json加载完毕")
     
-    parser = TemplateParser(template_file_path)
-    return parser.find_best_template(user_data)
+    def validate_user_data(self, user_data: LastSlot) -> Dict[str, Any]:
+        # 获取用户数据中的domain、intent和slots
+        user_domain = user_data.get("domain", "")
+        user_intent = user_data.get("intent", "")
+        user_slots: Dict[str, Any] = user_data.get("slots", {})
+        
+        print(f"开始验证用户数据: domain={user_domain}, intent={user_intent}, slots={user_slots}")
+        
+        # 验证domain和intent是否存在
+        if not user_domain:
+            return {"code": 1, "message": "缺少domain信息", "data": {}}
+        if not user_intent:
+            return {"code": 1, "message": "缺少intent信息", "data": {}}
+        
+        # 查找匹配的依赖关系，domain和intent都匹配的
+        matched_dependencies = []
+        for dependency in self.dependencies:  # type: Dependency
+            if dependency.get("domain") == user_domain and dependency.get("intent") == user_intent:
+                matched_dependencies.append(dependency)
+        
+        print(f"找到匹配的依赖关系数量: {len(matched_dependencies)}")
+        
+        if not matched_dependencies:
+            return {"code": 1, "message": f"未找到匹配的domain({user_domain})和intent({user_intent})组合", "data": {}}
+
+        error_slot = []
+        error_slot_value = []
+        error_both = []
+
+        print(f"开始验证slots匹配情况，共有{len(matched_dependencies)}个匹配的依赖关系")
+        
+        for dependency_index, dependency in enumerate(matched_dependencies):
+            print(f"正在验证第{dependency_index+1}个依赖关系")
+            lost_slots = {}
+            value_errors = {}
+
+            is_correct = True
+
+            dependency_slots = dependency.get("slots", {})
+            print(f"依赖关系中的slots: {dependency_slots}")
+
+            score = 100
+
+            for slot_key, slot_value_list in dependency_slots.items():
+                if slot_key in slot_white_list:
+                    continue
+                if slot_key not in user_slots:
+                    is_correct = False
+                    score -= 10
+                    lost_slots[slot_key] = slot_value_list
+                elif user_slots[slot_key] not in slot_value_list:
+                    is_correct = False
+                    score -= 5
+                    value_errors[slot_key] = slot_value_list
+
+            current_errors = {
+                "lost_slots": lost_slots,
+                "value_errors": value_errors,
+                "score": score,
+            }
+            
+            if is_correct:
+                print("验证成功，返回结果")
+                return {"code": 0, "message": "验证成功", "data": current_errors}
+            
+            lost_slots_flag = len(current_errors["lost_slots"]) > 0
+            value_errors_flag = len(current_errors["value_errors"]) > 0
+
+            if lost_slots_flag:
+                error_slot.append(current_errors)
+            if value_errors_flag:
+                error_slot_value.append(current_errors)
+            if lost_slots_flag and value_errors_flag:
+                error_both.append(current_errors)
+        
+        # 对三个错误列表按照score从大到小排序
+        error_slot.sort(key=lambda x: x["score"], reverse=True)
+        error_slot_value.sort(key=lambda x: x["score"], reverse=True)
+        error_both.sort(key=lambda x: x["score"], reverse=True)
+        
+        # 选择三者中分数最高的那一个作为返回结果
+        highest_score = -1
+        highest_error = None
+        error_type = ""
+        
+        if error_slot and (not highest_error or error_slot[0]["score"] > highest_score):
+            highest_score = error_slot[0]["score"]
+            highest_error = error_slot[0]
+            error_type = ErrorType.LOST_SLOT
+            
+        if error_slot_value and (not highest_error or error_slot_value[0]["score"] > highest_score):
+            highest_score = error_slot_value[0]["score"]
+            highest_error = error_slot_value[0]
+            error_type = ErrorType.VALUE_ERRORS
+            
+        if error_both and (not highest_error or error_both[0]["score"] > highest_score):
+            highest_score = error_both[0]["score"]
+            highest_error = error_both[0]
+            error_type = ErrorType.BOTH_ERROR
+        
+        if highest_error:
+            highest_error["error_type"] = error_type
+            return {"code": 1, "message": f"验证失败: {error_type}", "data": highest_error}
+        
+        # 如果没有找到任何错误，返回默认错误
+        return {"code": 1, "message": "验证失败", "data": {}}
+
+    def process_template(self, user_data: LastSlot) -> Dict[str, Any]:
+        """
+        处理用户数据，先验证数据，再根据错误类型选择模板并填充错误信息
+        
+        Args:
+            user_data: 用户数据
+            
+        Returns:
+            处理结果，包含模板内容
+        """
+        # 先调用validate_user_data验证用户数据
+        validation_result = self.validate_user_data(user_data)
+        
+        # 如果验证成功，直接返回结果
+        if validation_result.get("code") == 0:
+            return {
+                "code": 0,
+                "message": "验证成功",
+                "data": {
+                    "content": "验证成功"
+                }
+            }
+        
+        # 获取错误类型
+        error_data = validation_result.get("data", {})
+        error_type = error_data.get("error_type", "")
+        conetent = ""
+        # 根据错误类型选择模板
+        print(error_data)
+        if error_type == ErrorType.LOST_SLOT:
+            temp = ""
+            for key,value in error_data[error_type.value].items():
+                temp += key + "：" + "、".join(value) + "\n"
+            conetent = "由于缺少以下槽位信息而导致无法查出{}".format(temp)
+        elif error_type == ErrorType.VALUE_ERRORS:
+            temp = ""
+            for key,value in error_data[error_type.value].items():
+                temp += key + "：" + "、".join(value) + "\n"
+            conetent = "不好意思，此次查询由于以下槽位数据暂时不支持查找而导致无法得出结果{}".format(temp)
+        elif error_type == ErrorType.BOTH_ERROR:
+            for key,value in error_data[error_type.value].items():
+                conetent += key + "：" + "、".join(value) + "\n"
+        # 构造返回结果
+        return {
+            "code": validation_result.get("code", 1),
+            "message": validation_result.get("message", "验证失败"),
+            "data": {
+                "content": conetent,
+            }
+        }
+
+parser = TemplateParser()

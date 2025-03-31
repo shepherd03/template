@@ -1,0 +1,48 @@
+{
+    "text": "定州新立所2024年4月台区同期线损合格率多少",
+    "domain": "分台区同期线损",
+    "intent": "query_number",
+    "domain_top5": [
+        "分台区同期线损",
+        "采集成功率",
+        "配电线路同期线损",
+        "电费对账",
+        "营销用户"
+    ],
+    "slots": {
+        "org": "定州新立所",
+        "time": "2024年4月",
+        "ftqxdType": "台区同期线损",
+        "query": "合格率"
+    },
+    "subject": "营销b",
+    "last_slot": {
+        "text": "定州新立所2024年4月台区同期线损合格率多少",
+        "domain": "分台区同期线损",
+        "intent": "query_number",
+        "domain_top5": [
+            "分台区同期线损",
+            "采集成功率",
+            "配电线路同期线损",
+            "电费对账",
+            "营销用户"
+        ],
+        "slots": {
+            "org": "定州市新立供电所",
+            "ftqxdType": "台区同期线损",
+            "query": "合格率",
+            "startTime": "20240401",
+            "endTime": "20240430"
+        },
+        "subject": "营销b",
+        "source": [
+            "数据中台"
+        ],
+        "template": "分台区同期线损v26"
+    },
+    "result": {},
+    "order": "",
+    "cur_domain": "",
+    "lead_add": [],
+    "last_option": []
+}

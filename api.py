@@ -6,7 +6,7 @@ import uvicorn
 import json
 
 # 导入模板解析器
-from template_parser import parse_template
+from template_parser import parser
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -50,42 +50,46 @@ class TemplateData(BaseModel):
 
 # 定义模板响应模型
 class TemplateResponse(StandardResponse):
-    data: Optional[TemplateData] = None
+    data: Dict
 
-@app.post("/parse_template", response_model=TemplateResponse, summary="解析模板", description="根据用户数据解析匹配的模板内容")
+@app.post("/validate",summary="验证模板", description="根据用户数据验证模板")
+async def api_validate(user_data: UserData):
+    # 获取last_slot数据
+    last_slot = user_data.last_slot
+    print(last_slot)
+    # 直接调用模板解析函数
+    result = parser.validate_user_data(last_slot)
+    print(result)
+
+    # 正确构造TemplateResponse对象
+    response = TemplateResponse(
+        code=200 if result.get("code") == 0 else 400,
+        success=result.get("code") == 0,
+        message=result.get("message", ""),
+        data=result.get("data", {})
+    )
+
+    return response
+
+@app.post("/parse_template",summary="解析模板", description="根据用户数据解析匹配的模板内容")
 async def api_parse_template(user_data: UserData):
-    try:
-        # 将Pydantic模型转换为字典
-        user_dict = user_data.dict()
-        
-        # 调用模板解析函数
-        result = parse_template(user_dict)
-        
-        # 构建响应
-        template_data = TemplateData(
-            template_name=result["template"]["name"] if result["template"] else None,
-            content=result["content"]
-        )
-        
-        response = TemplateResponse(
-            code=200,
-            success=True,
-            message="模板解析成功",
-            data=template_data
-        )
-        
-        return response
-    except Exception as e:
-        # 异常处理
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "code": 500,
-                "success": False,
-                "message": f"模板解析失败: {str(e)}",
-                "data": None
-            }
-        )
+    # 将Pydantic模型转换为字典
+    # 获取last_slot数据
+    last_slot = user_data.last_slot
+    print(last_slot)
+    # 直接调用模板解析函数
+    result = parser.process_template(last_slot)
+    print(result)
+
+    # 正确构造TemplateResponse对象
+    response = TemplateResponse(
+        code=200 if result.get("code") == 0 else 400,
+        success=result.get("code") == 0,
+        message=result.get("message", ""),
+        data=result.get("data", {})
+    )
+
+    return response
 
 @app.get("/", summary="API状态检查", description="检查API服务是否正常运行")
 async def root():
